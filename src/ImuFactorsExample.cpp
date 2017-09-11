@@ -43,8 +43,9 @@
 #include <fstream>
 #include <iostream>
 
+#include <random>
 // Uncomment line below to use the CombinedIMUFactor as opposed to the standard ImuFactor.
-// #define USE_COMBINED
+//#define USE_COMBINED
 
 using namespace gtsam;
 using namespace std;
@@ -68,6 +69,8 @@ int main(int argc, char *argv[]) {
         data_filename = argv[1];
     }
 
+    std::ofstream before_csv("before.csv");
+    std::ofstream after_csv("after.csv");
     // Set up output file for plotting errors
     FILE *fp_out = fopen(output_filename.c_str(), "w+");
     fprintf(fp_out, "#time(s),x(m),y(m),z(m),qx,qy,qz,qw,gt_x(m),gt_y(m),gt_z(m),gt_qx,gt_qy,gt_qz,gt_qw\n");
@@ -159,6 +162,11 @@ int main(int argc, char *argv[]) {
     double dt = 0.005;  // The real system has noise, but here, results are nearly
     // exactly the same, so keeping this for simplicity.
 
+
+    //random engine
+    std::default_random_engine engine;
+    std::normal_distribution<double> normal_dis(0.0,1.0);
+
     // All priors have been set up, now iterate through the data file.
     while (file.good()) {
 
@@ -170,12 +178,18 @@ int main(int argc, char *argv[]) {
             Eigen::Matrix<double, 6, 1> imu = Eigen::Matrix<double, 6, 1>::Zero();
             for (int i = 0; i < 5; ++i) {
                 getline(file, value, ',');
+//                if(i<3)
                 imu(i) = atof(value.c_str());
+                if(i<3)
+                {
+                    imu(i) += (normal_dis(engine)/10.0);
+                }
             }
             getline(file, value, '\n');
             imu(5) = atof(value.c_str());
 
             // Adding the IMU preintegration.
+            ////                                     (acc ,         angle velocity,dt);
             imu_preintegrated_->integrateMeasurement(imu.head<3>(), imu.tail<3>(), dt);
 
         } else if (type == 1) { // GPS measurement
@@ -183,6 +197,7 @@ int main(int argc, char *argv[]) {
             for (int i = 0; i < 6; ++i) {
                 getline(file, value, ',');
                 gps(i) = atof(value.c_str());
+                gps(i) += normal_dis(engine);
             }
             getline(file, value, '\n');
             gps(6) = atof(value.c_str());
@@ -216,7 +231,8 @@ int main(int argc, char *argv[]) {
                                         gps(1),  // E,
                                         gps(2)), // D,
                                  correction_noise);
-            graph->add(gps_factor);
+//            graph->add(gps_factor);
+//            before_csv << gps(0)<<","<<gps(1)<<","<<gps(2)<<std::endl;
 
             // Now optimize and compare results.
             prop_state = imu_preintegrated_->predict(prev_state, prev_bias);
@@ -252,7 +268,8 @@ int main(int argc, char *argv[]) {
             // display statistics
             cout << "Position error:" << current_position_error << "\t " << "Angular error:"
                  << current_orientation_error << "\n";
-
+            after_csv << gtsam_position(0) << "," << gtsam_position(1) <<"," << gtsam_position(2) << std::endl;
+            before_csv << gps(0)<<","<<gps(1)<<","<<gps(2)<<std::endl;
             fprintf(fp_out, "%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",
                     output_time, gtsam_position(0), gtsam_position(1), gtsam_position(2),
                     gtsam_quat.x(), gtsam_quat.y(), gtsam_quat.z(), gtsam_quat.w(),
