@@ -132,3 +132,5 @@ set(Sophus_LIBRARIES libSophus.so)
 add_executable(ImuFactTest src/ImuFactorsExample.cpp)
 target_link_libraries(ImuFactTest
         -ltbb ${GTSAM_LIBRARIES} ${Boost_LIBRARIES})
+
+add_executable(BinTest src/BinTest.cpp)
