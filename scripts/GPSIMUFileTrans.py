@@ -100,4 +100,9 @@ if __name__ == '__main__':
             ))
             gps_index += 1
 
+    plt.figure()
+    for i in range(3):
+        plt.plot(gps[:,i+3])
+
+
     plt.show()
