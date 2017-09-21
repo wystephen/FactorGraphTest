@@ -61,6 +61,9 @@ const string output_filename = "imuFactorExampleResults.csv";
 PreintegrationType *imu_preintegrated_;
 
 int main(int argc, char *argv[]) {
+
+    omp_set_num_threads(12);
+
     string data_filename;
     if (argc < 2) {
         printf("using default CSV file\n");
@@ -121,7 +124,7 @@ int main(int argc, char *argv[]) {
 
     // We use the sensor specs to build the noise model for the IMU factor.
     double accel_noise_sigma = 0.3924;
-    double gyro_noise_sigma = 0.0205689024915;
+    double gyro_noise_sigma = 0.205689024915;
     double accel_bias_rw_sigma = 0.4905;
     double gyro_bias_rw_sigma = 0.001454441043;
     Matrix33 measured_acc_cov = Matrix33::Identity(3, 3) * pow(accel_noise_sigma, 2);
@@ -130,7 +133,7 @@ int main(int argc, char *argv[]) {
             Matrix33::Identity(3, 3) * 1e-1; // error committed in integrating position from velocities
     Matrix33 bias_acc_cov = Matrix33::Identity(3, 3) * pow(accel_bias_rw_sigma, 2);
     Matrix33 bias_omega_cov = Matrix33::Identity(3, 3) * pow(gyro_bias_rw_sigma, 2);
-    Matrix66 bias_acc_omega_int = Matrix::Identity(6, 6) * 1e-5; // error in the bias used for preintegration
+    Matrix66 bias_acc_omega_int = Matrix::Identity(6, 6) * 1e-1; // error in the bias used for preintegration
 
     boost::shared_ptr<PreintegratedCombinedMeasurements::Params> p = PreintegratedCombinedMeasurements::Params::MakeSharedD(
             0.0);
@@ -227,13 +230,13 @@ int main(int argc, char *argv[]) {
                                                             zero_bias, bias_noise_model));
 #endif
 
-            noiseModel::Diagonal::shared_ptr correction_noise = noiseModel::Isotropic::Sigma(3, 0.001);
+            noiseModel::Diagonal::shared_ptr correction_noise = noiseModel::Isotropic::Sigma(3, 0.5);
             GPSFactor gps_factor(X(correction_count),
                                  Point3(gps(0),  // N,
                                         gps(1),  // E,
                                         gps(2)), // D,
                                  correction_noise);
-//            graph->add(gps_factor);
+            graph->add(gps_factor);
 //            before_csv << gps(0)<<","<<gps(1)<<","<<gps(2)<<std::endl;
 
             // Now optimize and compare results.
