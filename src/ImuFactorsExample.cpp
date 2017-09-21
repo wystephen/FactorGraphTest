@@ -78,6 +78,7 @@ int main(int argc, char *argv[]) {
     // Begin parsing the CSV file.  Input the first line for initialization.
     // From there, we'll iterate through the file and we'll preintegrate the IMU
     // or add in the GPS given the input.
+    data_filename="csvtest.csv";
     ifstream file(data_filename.c_str());
     string value;
 
@@ -159,7 +160,7 @@ int main(int argc, char *argv[]) {
     double current_position_error = 0.0, current_orientation_error = 0.0;
 
     double output_time = 0.0;
-    double dt = 0.005;  // The real system has noise, but here, results are nearly
+    double dt = 0.01;  // The real system has noise, but here, results are nearly
     // exactly the same, so keeping this for simplicity.
 
 
