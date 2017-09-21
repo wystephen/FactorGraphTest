@@ -45,7 +45,7 @@
 
 #include <random>
 // Uncomment line below to use the CombinedIMUFactor as opposed to the standard ImuFactor.
-//#define USE_COMBINED
+#define USE_COMBINED
 
 using namespace gtsam;
 using namespace std;
@@ -110,8 +110,8 @@ int main(int argc, char *argv[]) {
     // Assemble prior noise model and add it the graph.
     noiseModel::Diagonal::shared_ptr pose_noise_model = noiseModel::Diagonal::Sigmas(
             (Vector(6) << 0.01, 0.01, 0.01, 0.5, 0.5, 0.5).finished()); // rad,rad,rad,m, m, m
-    noiseModel::Diagonal::shared_ptr velocity_noise_model = noiseModel::Isotropic::Sigma(3, 0.1); // m/s
-    noiseModel::Diagonal::shared_ptr bias_noise_model = noiseModel::Isotropic::Sigma(6, 1e-3);
+    noiseModel::Diagonal::shared_ptr velocity_noise_model = noiseModel::Isotropic::Sigma(3, 0.2); // m/s
+    noiseModel::Diagonal::shared_ptr bias_noise_model = noiseModel::Isotropic::Sigma(6, 1e-2);
 
     // Add all prior factors (pose, velocity, bias) to the graph.
     NonlinearFactorGraph *graph = new NonlinearFactorGraph();
@@ -120,14 +120,14 @@ int main(int argc, char *argv[]) {
     graph->add(PriorFactor<imuBias::ConstantBias>(B(correction_count), prior_imu_bias, bias_noise_model));
 
     // We use the sensor specs to build the noise model for the IMU factor.
-    double accel_noise_sigma = 0.0003924;
-    double gyro_noise_sigma = 0.000205689024915;
-    double accel_bias_rw_sigma = 0.004905;
-    double gyro_bias_rw_sigma = 0.000001454441043;
+    double accel_noise_sigma = 0.3924;
+    double gyro_noise_sigma = 0.0205689024915;
+    double accel_bias_rw_sigma = 0.4905;
+    double gyro_bias_rw_sigma = 0.001454441043;
     Matrix33 measured_acc_cov = Matrix33::Identity(3, 3) * pow(accel_noise_sigma, 2);
     Matrix33 measured_omega_cov = Matrix33::Identity(3, 3) * pow(gyro_noise_sigma, 2);
     Matrix33 integration_error_cov =
-            Matrix33::Identity(3, 3) * 1e-8; // error committed in integrating position from velocities
+            Matrix33::Identity(3, 3) * 1e-1; // error committed in integrating position from velocities
     Matrix33 bias_acc_cov = Matrix33::Identity(3, 3) * pow(accel_bias_rw_sigma, 2);
     Matrix33 bias_omega_cov = Matrix33::Identity(3, 3) * pow(gyro_bias_rw_sigma, 2);
     Matrix66 bias_acc_omega_int = Matrix::Identity(6, 6) * 1e-5; // error in the bias used for preintegration
@@ -207,7 +207,8 @@ int main(int argc, char *argv[]) {
 
             // Adding IMU factor and GPS factor and optimizing.
 #ifdef USE_COMBINED
-            PreintegratedCombinedMeasurements *preint_imu_combined = dynamic_cast<PreintegratedCombinedMeasurements*>(imu_preintegrated_);
+            PreintegratedCombinedMeasurements *preint_imu_combined =
+                    dynamic_cast<PreintegratedCombinedMeasurements*>(imu_preintegrated_);
             CombinedImuFactor imu_factor(X(correction_count-1), V(correction_count-1),
                                          X(correction_count  ), V(correction_count  ),
                                          B(correction_count-1), B(correction_count  ),
@@ -226,7 +227,7 @@ int main(int argc, char *argv[]) {
                                                             zero_bias, bias_noise_model));
 #endif
 
-            noiseModel::Diagonal::shared_ptr correction_noise = noiseModel::Isotropic::Sigma(3, 1.0);
+            noiseModel::Diagonal::shared_ptr correction_noise = noiseModel::Isotropic::Sigma(3, 0.001);
             GPSFactor gps_factor(X(correction_count),
                                  Point3(gps(0),  // N,
                                         gps(1),  // E,
@@ -242,6 +243,10 @@ int main(int argc, char *argv[]) {
             initial_values.insert(B(correction_count), prev_bias);
 
             LevenbergMarquardtOptimizer optimizer(*graph, initial_values);
+//            for(int i(0);i<200;++i)
+//            {
+//                optimizer.iterate();
+//            }
             Values result = optimizer.optimize();
 
             // Overwrite the beginning of the preintegration for the next step.

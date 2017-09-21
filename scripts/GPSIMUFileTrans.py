@@ -52,10 +52,11 @@ if __name__ == '__main__':
 
     plt.figure()
     plt.title('imu time')
-    plt.plot(imu[:, 0], '.r')
-    plt.plot(gps[:, 0])
+    plt.plot(imu[:, 0], '.r',label='imu time')
+    plt.plot(gps[:, 0],label = 'gps time')
+    plt.legend()
 
-    imu_time_interval = (imu[-1, 0] - imu[0, 0]) / float(imu.shape[0])
+    imu_time_interval = (imu[-1, 0] - imu[0, 0]) / float(imu.shape[0]-1)
 
     print("time interval :", imu_time_interval)
 
@@ -65,8 +66,15 @@ if __name__ == '__main__':
     while (True):
         if gps_index > (gps.shape[0] - 2) or imu_index > (imu.shape[0] - 2):
             break
+        if imu[imu_index,0]<gps[0,0]:
+            imu_index +=1
+            continue
+        if gps[gps_index,0] < imu[0,0]:
+            gps_index+=1
+            continue
 
-        if imu[imu_index, 0] < gps[gps_index, 0]:
+
+        if imu[imu_index, 0] <= gps[gps_index, 0]:
             f.write('0,{0},{1},{2},{3},{4},{5}\n'.format(
                 imu[imu_index, 1]/0.01,
                 imu[imu_index, 2]/0.01,
