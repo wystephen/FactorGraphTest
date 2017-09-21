@@ -38,6 +38,7 @@ int main()
 
     auto file_handle = open(file_name.c_str(),O_RDONLY);
 
+
     char *data = new char[4];
 
     while(read(file_handle,data,sizeof(double)))
