@@ -43,7 +43,7 @@ int main()
     while(read(file_handle,data,sizeof(double)))
     {
 
-        std::cout << *(double*)data << std::endl;
+        std::cout << *(reinterpret_cast<double*>(data)) << std::endl;
     }
 
 
