@@ -123,14 +123,14 @@ int main(int argc, char *argv[]) {
     graph->add(PriorFactor<imuBias::ConstantBias>(B(correction_count), prior_imu_bias, bias_noise_model));
 
     // We use the sensor specs to build the noise model for the IMU factor.
-    double accel_noise_sigma = 0.3924;
-    double gyro_noise_sigma = 0.205689024915;
-    double accel_bias_rw_sigma = 0.4905;
-    double gyro_bias_rw_sigma = 0.001454441043;
+    double accel_noise_sigma = 0.03924;
+    double gyro_noise_sigma = 0.0205689024915;
+    double accel_bias_rw_sigma = 0.0004905;
+    double gyro_bias_rw_sigma = 0.0001454441043;
     Matrix33 measured_acc_cov = Matrix33::Identity(3, 3) * pow(accel_noise_sigma, 2);
     Matrix33 measured_omega_cov = Matrix33::Identity(3, 3) * pow(gyro_noise_sigma, 2);
     Matrix33 integration_error_cov =
-            Matrix33::Identity(3, 3) * 1e-1; // error committed in integrating position from velocities
+            Matrix33::Identity(3, 3) * 1e-2; // error committed in integrating position from velocities
     Matrix33 bias_acc_cov = Matrix33::Identity(3, 3) * pow(accel_bias_rw_sigma, 2);
     Matrix33 bias_omega_cov = Matrix33::Identity(3, 3) * pow(gyro_bias_rw_sigma, 2);
     Matrix66 bias_acc_omega_int = Matrix::Identity(6, 6) * 1e-1; // error in the bias used for preintegration
@@ -201,7 +201,7 @@ int main(int argc, char *argv[]) {
             for (int i = 0; i < 6; ++i) {
                 getline(file, value, ',');
                 gps(i) = atof(value.c_str());
-//                gps(i) += normal_dis(engine);
+                gps(i) += normal_dis(engine);
             }
             getline(file, value, '\n');
             gps(6) = atof(value.c_str());
@@ -230,7 +230,7 @@ int main(int argc, char *argv[]) {
                                                             zero_bias, bias_noise_model));
 #endif
 
-            noiseModel::Diagonal::shared_ptr correction_noise = noiseModel::Isotropic::Sigma(3, 0.5);
+            noiseModel::Diagonal::shared_ptr correction_noise = noiseModel::Isotropic::Sigma(3,1);
             GPSFactor gps_factor(X(correction_count),
                                  Point3(gps(0),  // N,
                                         gps(1),  // E,
