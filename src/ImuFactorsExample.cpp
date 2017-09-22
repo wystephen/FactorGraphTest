@@ -45,7 +45,7 @@
 
 #include <random>
 // Uncomment line below to use the CombinedIMUFactor as opposed to the standard ImuFactor.
-#define USE_COMBINED
+//#define USE_COMBINED
 
 using namespace gtsam;
 using namespace std;
@@ -123,17 +123,17 @@ int main(int argc, char *argv[]) {
     graph->add(PriorFactor<imuBias::ConstantBias>(B(correction_count), prior_imu_bias, bias_noise_model));
 
     // We use the sensor specs to build the noise model for the IMU factor.
-    double accel_noise_sigma = 0.03924;
-    double gyro_noise_sigma = 0.0205689024915;
-    double accel_bias_rw_sigma = 0.0004905;
-    double gyro_bias_rw_sigma = 0.0001454441043;
+    double accel_noise_sigma = 0.0003924;
+    double gyro_noise_sigma = 0.000205689024915;
+    double accel_bias_rw_sigma = 0.004905;
+    double gyro_bias_rw_sigma = 0.000001454441043;
     Matrix33 measured_acc_cov = Matrix33::Identity(3, 3) * pow(accel_noise_sigma, 2);
     Matrix33 measured_omega_cov = Matrix33::Identity(3, 3) * pow(gyro_noise_sigma, 2);
     Matrix33 integration_error_cov =
-            Matrix33::Identity(3, 3) * 1e-2; // error committed in integrating position from velocities
+            Matrix33::Identity(3, 3) * 1e-8; // error committed in integrating position from velocities
     Matrix33 bias_acc_cov = Matrix33::Identity(3, 3) * pow(accel_bias_rw_sigma, 2);
     Matrix33 bias_omega_cov = Matrix33::Identity(3, 3) * pow(gyro_bias_rw_sigma, 2);
-    Matrix66 bias_acc_omega_int = Matrix::Identity(6, 6) * 1e-1; // error in the bias used for preintegration
+    Matrix66 bias_acc_omega_int = Matrix::Identity(6, 6) * 1e-5; // error in the bias used for preintegration
 
     boost::shared_ptr<PreintegratedCombinedMeasurements::Params> p = PreintegratedCombinedMeasurements::Params::MakeSharedD(
             0.0);
@@ -169,7 +169,7 @@ int main(int argc, char *argv[]) {
 
     //random engine
     std::default_random_engine engine;
-    std::normal_distribution<double> normal_dis(0.0,1.0);
+    std::normal_distribution<double> normal_dis(0.0,0.1);
 
     // All priors have been set up, now iterate through the data file.
     while (file.good()) {
@@ -230,7 +230,7 @@ int main(int argc, char *argv[]) {
                                                             zero_bias, bias_noise_model));
 #endif
 
-            noiseModel::Diagonal::shared_ptr correction_noise = noiseModel::Isotropic::Sigma(3,1);
+            noiseModel::Diagonal::shared_ptr correction_noise = noiseModel::Isotropic::Sigma(3,0.31);
             GPSFactor gps_factor(X(correction_count),
                                  Point3(gps(0),  // N,
                                         gps(1),  // E,
