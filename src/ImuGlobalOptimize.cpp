@@ -1,3 +1,29 @@
+/** 
+                   _ooOoo_ 
+                  o8888888o 
+                  88" . "88 
+                  (| -_- |) 
+                  O\  =  /O 
+               ____/`---'\____ 
+             .'  \\|     |//  `. 
+            /  \\|||  :  |||//  \ 
+           /  _||||| -:- |||||-  \ 
+           |   | \\\  -  /// |   | 
+           | \_|  ''\---/''  |   | 
+           \  .-\__  `-`  ___/-. / 
+         ___`. .'  /--.--\  `. . __ 
+      ."" '<  `.___\_<|>_/___.'  >'"". 
+     | | :  `- \`.;`\ _ /`;.`/ - ` : | | 
+     \  \ `-.   \_ __\ /__ _/   .-` /  / 
+======`-.____`-.___\_____/___.-`____.-'====== 
+                   `=---=' 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+         佛祖保佑       永无BUG 
+*/
+//
+// Created by steve on 17-9-22.
+//
+
 /* ----------------------------------------------------------------------------
 
  * GTSAM Copyright 2010, Georgia Tech Research Corporation,
@@ -245,17 +271,17 @@ int main(int argc, char *argv[]) {
             initial_values.insert(V(correction_count), prop_state.v());
             initial_values.insert(B(correction_count), prev_bias);
 
-            LevenbergMarquardtOptimizer optimizer(*graph, initial_values);
+
 //            for(int i(0);i<200;++i)
 //            {
 //                optimizer.iterate();
 //            }
-            Values result = optimizer.optimize();
+//            Values result = optimizer.optimize();
 
             // Overwrite the beginning of the preintegration for the next step.
-            prev_state = NavState(result.at<Pose3>(X(correction_count)),
-                                  result.at<Vector3>(V(correction_count)));
-            prev_bias = result.at<imuBias::ConstantBias>(B(correction_count));
+//            prev_state = NavState(result.at<Pose3>(X(correction_count)),
+//                                  result.at<Vector3>(V(correction_count)));
+//            prev_bias = result.at<imuBias::ConstantBias>(B(correction_count));
 
             // Reset the preintegration object.
             imu_preintegrated_->resetIntegrationAndSetBias(prev_bias);
@@ -277,7 +303,7 @@ int main(int argc, char *argv[]) {
             // display statistics
             cout << "Position error:" << current_position_error << "\t " << "Angular error:"
                  << current_orientation_error << "\n";
-            after_csv << gtsam_position(0) << "," << gtsam_position(1) <<"," << gtsam_position(2) << std::endl;
+//            after_csv << gtsam_position(0) << "," << gtsam_position(1) <<"," << gtsam_position(2) << std::endl;
             before_csv << gps(0)<<","<<gps(1)<<","<<gps(2)<<std::endl;
             fprintf(fp_out, "%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",
                     output_time, gtsam_position(0), gtsam_position(1), gtsam_position(2),
@@ -292,6 +318,19 @@ int main(int argc, char *argv[]) {
             return 1;
         }
     }
+
+    LevenbergMarquardtOptimizer optimizer(*graph, initial_values);
+    auto result = optimizer.optimize();
+    for(int i(0);i<correction_count;++i)
+    {
+        auto prev_state = NavState(result.at<Pose3>(X(i)),
+        result.at<Vector3>(V(i)));
+
+        Eigen::Vector3d pose = prev_state.pose().translation();
+        after_csv << pose(0) << "," << pose(1)<<","<<pose(2) << std::endl;
+    }
+
+    for(int i(0);)
     fclose(fp_out);
     cout << "Complete, results written to " << output_filename << "\n\n";;
     return 0;
