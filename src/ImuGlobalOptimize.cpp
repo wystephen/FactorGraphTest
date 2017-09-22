@@ -149,17 +149,17 @@ int main(int argc, char *argv[]) {
     graph->add(PriorFactor<imuBias::ConstantBias>(B(correction_count), prior_imu_bias, bias_noise_model));
 
     // We use the sensor specs to build the noise model for the IMU factor.
-    double accel_noise_sigma = 0.03924;
-    double gyro_noise_sigma = 0.0205689024915;
-    double accel_bias_rw_sigma = 0.04905;
+    double accel_noise_sigma = 0.003924;
+    double gyro_noise_sigma = 0.00205689024915;
+    double accel_bias_rw_sigma = 0.004905;
     double gyro_bias_rw_sigma = 0.0001454441043;
     Matrix33 measured_acc_cov = Matrix33::Identity(3, 3) * pow(accel_noise_sigma, 2);
     Matrix33 measured_omega_cov = Matrix33::Identity(3, 3) * pow(gyro_noise_sigma, 2);
     Matrix33 integration_error_cov =
-            Matrix33::Identity(3, 3) * 1e-8; // error committed in integrating position from velocities
+            Matrix33::Identity(3, 3) * 1e-4; // error committed in integrating position from velocities
     Matrix33 bias_acc_cov = Matrix33::Identity(3, 3) * pow(accel_bias_rw_sigma, 2);
     Matrix33 bias_omega_cov = Matrix33::Identity(3, 3) * pow(gyro_bias_rw_sigma, 2);
-    Matrix66 bias_acc_omega_int = Matrix::Identity(6, 6) * 1e-5; // error in the bias used for preintegration
+    Matrix66 bias_acc_omega_int = Matrix::Identity(6, 6) * 1e-1; // error in the bias used for preintegration
 
     boost::shared_ptr<PreintegratedCombinedMeasurements::Params> p = PreintegratedCombinedMeasurements::Params::MakeSharedD(
             0.0);
@@ -321,7 +321,7 @@ int main(int argc, char *argv[]) {
 
     LevenbergMarquardtOptimizer optimizer(*graph, initial_values);
     auto result = optimizer.optimize();
-    for(int i(0);i<correction_count;++i)
+    for(int i(30);i<correction_count;++i)
     {
         auto prev_state = NavState(result.at<Pose3>(X(i)),
         result.at<Vector3>(V(i)));
