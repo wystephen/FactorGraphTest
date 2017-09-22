@@ -227,7 +227,7 @@ int main(int argc, char *argv[]) {
             for (int i = 0; i < 6; ++i) {
                 getline(file, value, ',');
                 gps(i) = atof(value.c_str());
-                gps(i) += normal_dis(engine);
+//                gps(i) += normal_dis(engine);
             }
             getline(file, value, '\n');
             gps(6) = atof(value.c_str());
