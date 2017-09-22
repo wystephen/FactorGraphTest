@@ -227,7 +227,7 @@ int main(int argc, char *argv[]) {
             for (int i = 0; i < 6; ++i) {
                 getline(file, value, ',');
                 gps(i) = atof(value.c_str());
-//                gps(i) += normal_dis(engine);
+                gps(i) += normal_dis(engine);
             }
             getline(file, value, '\n');
             gps(6) = atof(value.c_str());
@@ -330,7 +330,6 @@ int main(int argc, char *argv[]) {
         after_csv << pose(0) << "," << pose(1)<<","<<pose(2) << std::endl;
     }
 
-    for(int i(0);)
     fclose(fp_out);
     cout << "Complete, results written to " << output_filename << "\n\n";;
     return 0;
