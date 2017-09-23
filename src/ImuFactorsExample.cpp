@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
     // Begin parsing the CSV file.  Input the first line for initialization.
     // From there, we'll iterate through the file and we'll preintegrate the IMU
     // or add in the GPS given the input.
-    data_filename="csvtest.csv";
+    data_filename = "csvtest.csv";
     ifstream file(data_filename.c_str());
     string value;
 
@@ -169,7 +169,14 @@ int main(int argc, char *argv[]) {
 
     //random engine
     std::default_random_engine engine;
-    std::normal_distribution<double> normal_dis(0.0,0.1);
+    std::normal_distribution<double> normal_dis(0.0, 0.1);
+
+
+
+
+
+
+
 
     // All priors have been set up, now iterate through the data file.
     while (file.good()) {
@@ -197,6 +204,11 @@ int main(int argc, char *argv[]) {
             imu_preintegrated_->integrateMeasurement(imu.head<3>(), imu.tail<3>(), dt);
 
         } else if (type == 1) { // GPS measurement
+
+
+
+
+
             Eigen::Matrix<double, 7, 1> gps = Eigen::Matrix<double, 7, 1>::Zero();
             for (int i = 0; i < 6; ++i) {
                 getline(file, value, ',');
@@ -236,7 +248,8 @@ int main(int argc, char *argv[]) {
                                         gps(1),  // E,
                                         gps(2)), // D,
                                  correction_noise);
-            graph->add(gps_factor);
+
+                graph->add(gps_factor);
 //            before_csv << gps(0)<<","<<gps(1)<<","<<gps(2)<<std::endl;
 
             // Now optimize and compare results.

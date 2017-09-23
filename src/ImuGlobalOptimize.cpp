@@ -197,6 +197,10 @@ int main(int argc, char *argv[]) {
     std::default_random_engine engine;
     std::normal_distribution<double> normal_dis(0.0,0.1);
 
+    // For simulate lossing situation
+    int flag = 0;
+    std::uniform_real_distribution<double> unifor_dis(0.0,1.0);
+
     // All priors have been set up, now iterate through the data file.
     while (file.good()) {
 
@@ -223,6 +227,16 @@ int main(int argc, char *argv[]) {
             imu_preintegrated_->integrateMeasurement(imu.head<3>(), imu.tail<3>(), dt);
 
         } else if (type == 1) { // GPS measurement
+            /// Test lossing for some moment
+            if(unifor_dis(engine)>0.85)
+            {
+                flag = 10;
+            }
+            if(flag>=0)
+            {
+                flag--;
+            }
+
             Eigen::Matrix<double, 7, 1> gps = Eigen::Matrix<double, 7, 1>::Zero();
             for (int i = 0; i < 6; ++i) {
                 getline(file, value, ',');
@@ -256,13 +270,16 @@ int main(int argc, char *argv[]) {
                                                             zero_bias, bias_noise_model));
 #endif
 
-            noiseModel::Diagonal::shared_ptr correction_noise = noiseModel::Isotropic::Sigma(3,0.31);
+            noiseModel::Diagonal::shared_ptr correction_noise = noiseModel::Isotropic::Sigma(3,0.031);
             GPSFactor gps_factor(X(correction_count),
                                  Point3(gps(0),  // N,
                                         gps(1),  // E,
                                         gps(2)), // D,
                                  correction_noise);
-            graph->add(gps_factor);
+            if(flag<0){
+
+                graph->add(gps_factor);
+            }
 //            before_csv << gps(0)<<","<<gps(1)<<","<<gps(2)<<std::endl;
 
             // Now optimize and compare results.
