@@ -149,8 +149,8 @@ int main(int argc, char *argv[]) {
     graph->add(PriorFactor<imuBias::ConstantBias>(B(correction_count), prior_imu_bias, bias_noise_model));
 
     // We use the sensor specs to build the noise model for the IMU factor.
-    double accel_noise_sigma = 0.003924;
-    double gyro_noise_sigma = 0.00205689024915;
+    double accel_noise_sigma = 0.0003924;
+    double gyro_noise_sigma = 0.000205689024915;
     double accel_bias_rw_sigma = 0.004905;
     double gyro_bias_rw_sigma = 0.0001454441043;
     Matrix33 measured_acc_cov = Matrix33::Identity(3, 3) * pow(accel_noise_sigma, 2);
@@ -228,9 +228,9 @@ int main(int argc, char *argv[]) {
 
         } else if (type == 1) { // GPS measurement
             /// Test lossing for some moment
-            if(unifor_dis(engine)>0.85)
+            if(unifor_dis(engine)>0.9)
             {
-                flag = 10;
+                flag = 5;
             }
             if(flag>=0)
             {
