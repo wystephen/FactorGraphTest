@@ -338,10 +338,9 @@ int main(int argc, char *argv[]) {
     }
 
     LevenbergMarquardtOptimizer optimizer(*graph, initial_values);
-    auto it_times = optimizer.getInnerIterations();
-    std::thread t([&](){
+    std::thread t([&]{
         while(1){
-            std::cout << it_times << std::endl;
+            std::cout << optimizer.getInnerIterations() << std::endl;
             sleep(1);
         }
     });
