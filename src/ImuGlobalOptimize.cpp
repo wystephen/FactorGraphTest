@@ -70,6 +70,7 @@
 #include <iostream>
 
 #include <random>
+#include <thread>
 // Uncomment line below to use the CombinedIMUFactor as opposed to the standard ImuFactor.
 //#define USE_COMBINED
 
@@ -337,6 +338,15 @@ int main(int argc, char *argv[]) {
     }
 
     LevenbergMarquardtOptimizer optimizer(*graph, initial_values);
+    auto it_times = optimizer.getInnerIterations();
+    std::thread t([&](){
+        while(1){
+            std::cout << it_times << std::endl;
+            sleep(1);
+        }
+    });
+    t.detach();
+
     auto result = optimizer.optimize();
     for(int i(30);i<correction_count;++i)
     {
