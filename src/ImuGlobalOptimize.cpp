@@ -108,7 +108,7 @@ int main(int argc, char *argv[]) {
     // Begin parsing the CSV file.  Input the first line for initialization.
     // From there, we'll iterate through the file and we'll preintegrate the IMU
     // or add in the GPS given the input.
-    data_filename="csvtest.csv";
+    data_filename = "csvtest.csv";
     ifstream file(data_filename.c_str());
     string value;
 
@@ -145,9 +145,10 @@ int main(int argc, char *argv[]) {
 
     // Add all prior factors (pose, velocity, bias) to the graph.
     NonlinearFactorGraph *graph = new NonlinearFactorGraph();
-    graph->add(PriorFactor<Pose3>(X(correction_count), prior_pose, pose_noise_model));
-    graph->add(PriorFactor<Vector3>(V(correction_count), prior_velocity, velocity_noise_model));
-    graph->add(PriorFactor<imuBias::ConstantBias>(B(correction_count), prior_imu_bias, bias_noise_model));
+//    graph->add(PriorFactor<Pose3>(X(correction_count), prior_pose, pose_noise_model));
+//    graph->add(PriorFactor<Vector3>(V(correction_count), prior_velocity, velocity_noise_model));
+//    graph->add(PriorFactor<imuBias::ConstantBias>(B(correction_count), prior_imu_bias, bias_noise_model));
+
 
     // We use the sensor specs to build the noise model for the IMU factor.
     double accel_noise_sigma = 0.0003924;
@@ -162,8 +163,9 @@ int main(int argc, char *argv[]) {
     Matrix33 bias_omega_cov = Matrix33::Identity(3, 3) * pow(gyro_bias_rw_sigma, 2);
     Matrix66 bias_acc_omega_int = Matrix::Identity(6, 6) * 1e-1; // error in the bias used for preintegration
 
-    boost::shared_ptr<PreintegratedCombinedMeasurements::Params> p = PreintegratedCombinedMeasurements::Params::MakeSharedD(
-            0.0);
+    boost::shared_ptr<PreintegratedCombinedMeasurements::Params> p =
+            PreintegratedCombinedMeasurements::Params::MakeSharedU(
+                    9.8);
     // PreintegrationBase params:
     p->accelerometerCovariance = measured_acc_cov; // acc white noise in continuous
     p->integrationCovariance = integration_error_cov; // integration uncertainty continuous
@@ -196,11 +198,11 @@ int main(int argc, char *argv[]) {
 
     //random engine
     std::default_random_engine engine;
-    std::normal_distribution<double> normal_dis(0.0,0.1);
+    std::normal_distribution<double> normal_dis(0.0, 0.1);
 
     // For simulate lossing situation
     int flag = 0;
-    std::uniform_real_distribution<double> unifor_dis(0.0,1.0);
+    std::uniform_real_distribution<double> unifor_dis(0.0, 1.0);
 
     // All priors have been set up, now iterate through the data file.
     while (file.good()) {
@@ -229,12 +231,10 @@ int main(int argc, char *argv[]) {
 
         } else if (type == 1) { // GPS measurement
             /// Test lossing for some moment
-            if(unifor_dis(engine)>0.9)
-            {
+            if (unifor_dis(engine) > 0.9) {
                 flag = 5;
             }
-            if(flag>=0)
-            {
+            if (flag >= 0) {
                 flag--;
             }
 
@@ -271,13 +271,13 @@ int main(int argc, char *argv[]) {
                                                             zero_bias, bias_noise_model));
 #endif
 
-            noiseModel::Diagonal::shared_ptr correction_noise = noiseModel::Isotropic::Sigma(3,0.031);
+            noiseModel::Diagonal::shared_ptr correction_noise = noiseModel::Isotropic::Sigma(3, 0.31);
             GPSFactor gps_factor(X(correction_count),
                                  Point3(gps(0),  // N,
                                         gps(1),  // E,
                                         gps(2)), // D,
                                  correction_noise);
-            if(flag<0){
+            if (flag < 0) {
 
                 graph->add(gps_factor);
             }
@@ -322,7 +322,7 @@ int main(int argc, char *argv[]) {
             cout << "Position error:" << current_position_error << "\t " << "Angular error:"
                  << current_orientation_error << "\n";
 //            after_csv << gtsam_position(0) << "," << gtsam_position(1) <<"," << gtsam_position(2) << std::endl;
-            before_csv << gps(0)<<","<<gps(1)<<","<<gps(2)<<std::endl;
+            before_csv << gps(0) << "," << gps(1) << "," << gps(2) << std::endl;
             fprintf(fp_out, "%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",
                     output_time, gtsam_position(0), gtsam_position(1), gtsam_position(2),
                     gtsam_quat.x(), gtsam_quat.y(), gtsam_quat.z(), gtsam_quat.w(),
@@ -338,8 +338,8 @@ int main(int argc, char *argv[]) {
     }
 
     LevenbergMarquardtOptimizer optimizer(*graph, initial_values);
-    std::thread t([&]{
-        while(1){
+    std::thread t([&] {
+        while (1) {
             std::cout << optimizer.getInnerIterations() << std::endl;
             sleep(1);
         }
@@ -347,13 +347,12 @@ int main(int argc, char *argv[]) {
     t.detach();
 
     auto result = optimizer.optimize();
-    for(int i(30);i<correction_count;++i)
-    {
+    for (int i(30); i < correction_count; ++i) {
         auto prev_state = NavState(result.at<Pose3>(X(i)),
-        result.at<Vector3>(V(i)));
+                                   result.at<Vector3>(V(i)));
 
         Eigen::Vector3d pose = prev_state.pose().translation();
-        after_csv << pose(0) << "," << pose(1)<<","<<pose(2) << std::endl;
+        after_csv << pose(0) << "," << pose(1) << "," << pose(2) << std::endl;
     }
 
     fclose(fp_out);

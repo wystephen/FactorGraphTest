@@ -78,10 +78,10 @@ if __name__ == '__main__':
             f.write('0,{0},{1},{2},{3},{4},{5}\n'.format(
                 imu[imu_index, 1]/0.01,
                 imu[imu_index, 2]/0.01,
-                imu[imu_index, 3]/0.01,
+                imu[imu_index, 3]/0.01*-1.0,
                 imu[imu_index, 4]/0.01,
                 imu[imu_index, 5]/0.01,
-                imu[imu_index, 6]/0.01
+                imu[imu_index, 6]/0.01*-1.0
             ))
             # f.write('0,{0},{1},{2},{3},{4},{5}\n'.format(
             #     imu[imu_index, 1],
