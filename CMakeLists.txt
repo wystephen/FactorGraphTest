@@ -6,7 +6,8 @@ set(CMAKE_CXX_STANDARD 11)
 
 
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -std=c++11  -msse2 -msse3 -msse4 -lopencv_aruco -lpthread -lSophus ")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -std=c++11  -msse2 -msse3 -msse4 -lopencv_aruco -lpthread -lSophus ")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -std=c++11  -msse2 -msse3 -msse4 -lopencv_aruco -pthread ")
 #set(CUDA_NVCC_FLAGSS ${CUDA_NVCC_FLAGS} --gpu-architecture sm_20)
 
 
@@ -17,10 +18,10 @@ find_package(Eigen3 REQUIRED)
 #find_package(PythonLibs 3.0 REQUIRED)
 find_package(PythonLibs 2.7 REQUIRED)
 
-find_package(Sophus REQUIRED)
-if (SOPHUS_FOUND)
-    message("Sophus_FOUND")
-endif ()
+#find_package(Sophus REQUIRED)
+#if (SOPHUS_FOUND)
+#    message("Sophus_FOUND")
+#endif ()
 
 
 find_package(OpenMP)
@@ -31,8 +32,8 @@ find_package(LAPACK)
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 message(${CMAKE_MODULE_PATH})
 # G2O
-SET(G2O_ROOT /usr/local/include/g2o)
-FIND_PACKAGE(G2O)
+#SET(G2O_ROOT /usr/local/include/g2o)
+#FIND_PACKAGE(G2O)
 FIND_PACKAGE(CSparse)
 
 find_package(Pangolin 0.2 QUIET)
@@ -96,21 +97,22 @@ link_directories(
         /usr/local/lib/
         /usr/lib/
         /usr/lib/x86_64-linux-gnu/
+
         ${BLAS_LIBRARIES}
         ${LAPACK_LIBRARIES}
         #        ./include
 )
 
 
-SET(G2O_LIBS g2o_cli g2o_ext_freeglut_minimal g2o_simulator
-        g2o_solver_slam2d_linear g2o_types_icp g2o_types_slam2d
-        g2o_core g2o_interface g2o_solver_csparse g2o_solver_structure_only
-        g2o_types_sba g2o_types_slam3d g2o_csparse_extension g2o_opengl_helper
-        g2o_solver_dense g2o_stuff g2o_types_sclam2d g2o_parser g2o_solver_pcg
-        g2o_types_data g2o_types_sim3 cxsparse
-        g2o_types_slam3d_addons)
-
-set(Sophus_LIBRARIES libSophus.so)
+#SET(G2O_LIBS g2o_cli g2o_ext_freeglut_minimal g2o_simulator
+#        g2o_solver_slam2d_linear g2o_types_icp g2o_types_slam2d
+#        g2o_core g2o_interface g2o_solver_csparse g2o_solver_structure_only
+#        g2o_types_sba g2o_types_slam3d g2o_csparse_extension g2o_opengl_helper
+#        g2o_solver_dense g2o_stuff g2o_types_sclam2d g2o_parser g2o_solver_pcg
+#        g2o_types_data g2o_types_sim3 cxsparse
+#        g2o_types_slam3d_addons)
+#
+#set(Sophus_LIBRARIES libSophus.so)
 
 
 
